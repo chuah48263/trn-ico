@@ -1,0 +1,91 @@
+#!/bin/bash
+
+installed=$(xcode-select -p)
+if [[ "$installed" =~ ^.*Developer.*$ ]]; then
+  if [[ "$@" != "" ]] && [[ "$@" != "help" ]] && [[ "$@" != "-h" ]] && [[ "$@" != "desktop" ]] && [[ "$@" != "-d" ]]; then
+    if [ -f $@ ]; then
+      echo "\"""$@""\""
+      echo -n "Assign transparent icon to this file. Confirm [Y/n]? "
+      read yn
+      if [ -z "$yn" ] || [[ $yn =~ ^[Yy]$ ]]; then
+        file="$@"
+        parent="$(dirname "$@")"
+        png="$parent"/"transparent.png"
+        rsrc="$parent"/"tmpicns.rsrc"
+        mkdir ~/.1234567890/
+        cp ~/.trn-ico/transparent.png ~/.1234567890/transparent.png
+        cp ~/.trn-ico/transparent.png $png
+        sips -i $png
+        Derez -only icns $png > $rsrc
+        Rez -append $rsrc -o $file
+        SetFile -a C $file
+        rm -f $png $rsrc
+        if [ ! -f ~/.trn-ico/transparent.png ]; then
+          cp ~/.1234567890/transparent.png ~/.trn-ico/transparent.png
+        fi
+        rm -rf ~/.1234567890/
+        echo "Operation completed. Icon of file \"""$file""\" is now transparent."
+        exit 0
+      else
+        echo "Operation terminated. Execute \"trn-ico help\" for manual."
+        exit 1
+      fi
+    else
+      echo "Operation failed. File" "\"""$@""\"" "does not exist."
+      exit 1
+    fi
+  elif [[ "$@" == "desktop" ]] || [[ "$@" == "-d" ]]; then
+    array=()
+    if [ -f ~/Desktop/.DS_Store ]; then
+      array+=('~/Desktop/.DS_Store')
+    fi
+    if [ -f ~/Desktop/.localized ]; then
+      array+=('~/Desktop/.localized')
+    fi
+    separator=" & "
+    regex="$( printf "${separator}%s" "${array[@]}" )"
+    file="${regex:${#separator}}"
+    echo -n "${file}" "will be assigned with transparent icon. Continue [Y/n]? "
+    read ny
+    if [ -z "$ny" ] || [[ $ny =~ ^[Yy]$ ]]; then
+      for i in "${array[@]}"; do
+        cp ~/.trn-ico/transparent.png ~/Desktop/transparent.png
+        sips -i ~/Desktop/transparent.png
+        Derez -only icns ~/Desktop/transparent.png > ~/Desktop/tmpicns.rsrc
+        Rez -append ~/Desktop/tmpicns.rsrc -o $i
+        SetFile -a C $i
+        rm -f ~/Desktop/tmpicns.rsrc ~/Desktop/transparent.png
+        echo "Operation completed. Icon of file $i is now transparent."
+      done
+      exit 0
+    else
+      echo "Operation terminated. Execute \"trn-ico help\" for manual."
+      exit 1
+    fi
+  elif [[ "$@" == "help" ]] || [[ "$@" == "-h" ]]; then
+    echo ""
+    echo "\"trn-ico\" is a tool to help you assign transparent icon to any specified file."
+    echo ""
+    echo "Usage of \"trn-ico <argument>\":"
+    echo " ＊ \"/path/to/file\": Assign transparent icon to specified file, one at a time."
+    echo " ＊ desktop [-d]: Assign transparent icon to desktop \".DS_Store\" & \".localized\"."
+    echo " ＊ help [-h]: Manual page for \"trn-ico\"."
+    echo ""
+    exit 0
+  elif [ $# -eq 0 ]; then
+    echo ""
+    echo "Please specify your usage: \"trn-ico <argument>\""
+    echo " ＊ \"/path/to/file\""
+    echo " ＊ desktop [-d]"
+    echo " ＊ help [-h]"
+    echo ""
+    exit 1
+  else
+    echo "Operation failed. Please specify file path as argument: \"trn-ico <file path>\"."
+    exit 1
+  fi
+else
+  echo "\"Command Line Develepoer Tools\" is not installed on your Mac."
+  echo "Please install it with \"xcode-select --install\" before running \"trn-ico\" again."
+  exit 1
+fi
