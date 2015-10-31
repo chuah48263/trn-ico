@@ -30,6 +30,9 @@ if [[ "$installed" =~ ^.*Developer.*$ ]]; then
         echo "Operation terminated. Execute \"trn-ico help\" for manual."
         exit 1
       fi
+    elif [ -d $@ ]; then
+      echo "Operation failed. \"trn-ico\" works only on files, not folders."
+      exit 1
     else
       echo "Operation failed. File" "\"""$@""\"" "does not exist."
       exit 1
@@ -70,6 +73,8 @@ if [[ "$installed" =~ ^.*Developer.*$ ]]; then
     echo " ＊ \"/path/to/file\": Assign transparent icon to specified file, one at a time."
     echo " ＊ desktop [-d]: Assign transparent icon to desktop \".DS_Store\" & \".localized\"."
     echo " ＊ help [-h]: Manual page for \"trn-ico\"."
+    echo ""
+    echo "Reminder: \"trn-ico\" works only on files, not folders."
     echo ""
     exit 0
   elif [ $# -eq 0 ]; then
